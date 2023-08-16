@@ -1,0 +1,90 @@
+$background: #1e1e2e;
+$pink: #f5c2e7;
+$lavendar: #b4befe;
+$red: #f38ba8;
+$maroon: #eba0ac;
+$peach: #fab387;
+$yellow: #f9e2af;
+$green: #a6e3a1;
+$text: #cdd6f4;
+$subtext: #a6adc8;
+
+* {
+	color: $text;
+	font-family: CaskaydiaCove Nerd Font Mono SemiBold;
+	font-size: 10pt;
+	padding: 0 1px;
+}
+
+.red { color: $red; }
+.maroon { color: $maroon; }
+.peach { color: $peach; }
+.yellow { color: $yellow; }
+.green { color: $green; }
+
+.button {
+	* {
+		all: unset;
+		margin: 0 10px;
+		font-size:14pt;
+		transition: color 0.2s ease-in-out;
+	}
+	&:hover * {
+		color: $pink;
+	}
+}
+
+.background {
+	border: 1px solid $pink;
+	background-color: $background;
+	border-radius: 12px;
+	opacity: 0.8;
+}
+
+scale trough {
+	margin: 0 10px;
+	border: none;
+	background-color: #FFF;
+	min-height: 3px;
+	min-width: 100px;
+
+	& slider {
+		box-shadow: none;
+		background-image: none;
+		border: none;
+		background-color: $pink;
+		min-width: 5pt;
+		min-height: 5pt;
+		margin: -5pt;
+	}
+
+	& highlight {
+		border: none;
+		background-color: $lavendar;
+	}
+}
+
+.workspaces * {
+	padding: 0 8px;
+	font-size: 14pt;
+	transition: color 0.2s ease-in-out;
+	
+	&:hover * {
+		color: $pink;
+	}
+
+	.empty * {
+		color: $subtext;
+	}
+	.current * {
+		color: $green;
+	}
+}
+
+.clipboard {
+	color: $subtext;
+}
+
+.time {
+	padding-right: 10px;
+}

@@ -1,0 +1,122 @@
+(defwindow statusbar
+ :monitor 0
+ :stacking "fg"
+ :exclusive true
+ :geometry (geometry
+	 :y "1%"
+	 :width "99%"
+	 :height "24px"
+	 :anchor "top center")
+ (statusbar))
+
+(defwidget statusbar []
+ (box
+  :visible statusbar-visible
+  (statusbar-left)
+  (statusbar-mid-left)
+  (statusbar-middle)
+  (statusbar-mid-right)
+  (statusbar-right)))
+
+(defpoll statusbar-visible
+ :initial "true"
+ :interval "1s"
+ "if pgrep bemenu > /dev/null; then echo 'false'; else echo 'true'; fi")
+
+(defwidget statusbar-left []
+ (box
+  (workspaces)))
+(defwidget statusbar-mid-left []
+ (box
+  (music)))
+(defwidget statusbar-middle []
+ (box
+  (windowtitle)))
+(defwidget statusbar-mid-right []
+ (box
+  (music-controls)))
+(defwidget statusbar-right []
+ (box
+  :space-evenly false
+  :halign "end"
+  (clipboard)
+  (wifi)
+  (time)))
+
+(defwidget workspaces []
+ (eventbox
+  :onscroll "~/Scripts/eww/workspaceInfo.zsh change {} ${workspaces-current}"
+  :class "workspaces"
+  (box
+   :space-evenly false
+   (for workspace in workspaces
+	(eventbox 
+	 :onclick "hyprctl dispatch workspace ${workspace.id}"
+	 :class "workspace ${workspace.id == workspaces-current ? "current" : ""} ${workspace.windows > 0 ? "occupied" : "empty"}"
+	 (label :text '${replace(icons[workspace.id], "null", workspace.id)}'))))))
+(deflisten workspaces :initial "[]" "~/Scripts/eww/workspaceInfo.zsh get")
+(deflisten workspaces-current :initial "1" "~/Scripts/eww/workspaceInfo.zsh active")
+(defvar icons '["", " ", " ", "󰙯 ", " ", " "]')
+
+(defwidget music []
+ (box
+  :space-evenly false
+  :class "music"
+  :tooltip "${music.player}: ${music.title} - ${music.artist}"
+  (eventbox :class "button" :onclick `playerctl previous` "玲")
+  (label :class "yellow" :text music-position)
+  (scale :min 0 :max 100 :value music-progress :round-digits 0 :onchange `~/Scripts/eww/musicInfo.zsh {}`)
+  (label :class "yellow" :text music-length)
+  (eventbox :class "button" :onclick `playerctl next` "怜")))
+(deflisten music :initial '{"player":"","title":"","artist":""}' `~/Scripts/eww/musicInfo.zsh song`)
+(deflisten music-position `~/Scripts/eww/musicInfo.zsh position`)
+(deflisten music-progress :initial 0 `~/Scripts/eww/musicInfo.zsh progress`)
+(deflisten music-length `~/Scripts/eww/musicInfo.zsh length`)
+
+(defwidget windowtitle []
+ (label :text windowtitle-short :tooltip windowtitle))
+(deflisten windowtitle `~/Scripts/eww/workspaceInfo.zsh window`)
+(deflisten windowtitle-short `~/Scripts/eww/workspaceInfo.zsh window-short`)
+
+(defwidget music-controls []
+ (box
+  :space-evenly false
+  (eventbox :class "button" :onclick `${music-shuffle.command}` "${music-shuffle.icon}")
+  (eventbox :class "button" :onclick `${music-status.command}` "${music-status.icon}")
+  (eventbox :class "button" :onclick `${music-loop.command}` "${music-loop.icon}")
+  (scale
+   :min 0 :max 121
+   :value "${volume.count}"
+   :round-digits 0
+   :onchange `pactl set-sink-volume @DEFAULT_SINK@ {}%`)
+  (label :text "${volume.count}%" :class "${volume.colour}")))
+(defpoll volume :interval "5s" `~/Scripts/eww/volumeInfo.sh`)
+(deflisten music-shuffle `~/Scripts/eww/musicControls.sh shuffle`)
+(deflisten music-status `~/Scripts/eww/musicControls.sh status`)
+(deflisten music-loop `~/Scripts/eww/musicControls.sh loop`)
+
+(defwidget clipboard []
+ (label :text clipboard-short :tooltip clipboard :class "clipboard"))
+(defpoll clipboard :interval "5s" `~/Scripts/eww/clipboardInfo.zsh all`)
+(defpoll clipboard-short :interval "5s" `~/Scripts/eww/clipboardInfo.zsh head`) 
+
+(defwidget wifi []
+ (eventbox
+  :class "button wifi ${wifi-colour}"
+  (button
+   :tooltip "Connected To: ${wifi-name}"
+   :onclick `~/Scripts/rofi/rofi-wifi.sh &`
+   wifi-icon)))
+(defpoll wifi-colour :initial "red" :interval "10s" `~/Scripts/eww/wifiInfo.zsh colour`)
+(defpoll wifi-icon :initial "󰤯" :interval "10s" `~/Scripts/eww/wifiInfo.zsh strength`)
+(defpoll wifi-name :interval "1m" `~/Scripts/eww/wifiInfo.zsh name`)
+
+(defwidget time []
+ (box 
+  :space-evenly false
+  :class "time"
+  :tooltip "${time.long}"
+  (label :class "yellow" :text "${time.hour}")
+  (label :text ":")
+  (label :class "yellow" :text "${time.minute}")))
+(deflisten time "~/Scripts/eww/dateInfo.zsh")
